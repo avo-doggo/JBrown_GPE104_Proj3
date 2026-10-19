@@ -16,11 +16,13 @@ public class PawnShip : Pawn
 
         sh = GetComponent<Spawner>();
 
-
+        if (rb == null)
+        {
+            Debug.LogError("PawnShip needs a Rigidbody on the same GameObject!");
+        }
     }
     public override void Move(Vector3 moveDirection)
     {
-        //push in the direction passed in, with moveForce force
         Vector3 pushForce = moveDirection * moveForce;
         rb.AddForce(pushForce);
     }

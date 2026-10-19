@@ -2,41 +2,68 @@ using UnityEngine;
 
 public class Damager : MonoBehaviour
 {
+    [Header("Damage")]
     public float damageAmount;
     public bool isInstakill;
 
-    // Check this in the Inspector.
-    // TRUE = this object can damage the player.
-    // FALSE = this object cannot damage the player.
+    [Header("Who Can This Damage?")]
     public bool damagePlayer;
+    public bool damageEnemy;
+    public bool damageAsteroid;
 
     private PawnShip owner;
 
     private void Start()
     {
-        // Find the PawnShip that owns this Damager.
-        owner = GetComponent<PawnShip>();
+        owner = GetComponentInParent<PawnShip>();
     }
 
     private void OnTriggerEnter(Collider collision)
     {
-        // Get the Health component from whatever we hit.
-        Health otherHealth = collision.GetComponent<Health>();
+        Health otherHealth = collision.GetComponentInParent<Health>();
 
         if (otherHealth == null)
         {
             return;
         }
 
-        // If this Damager cannot damage the player,
-        // ignore anything that is the player's PawnShip.
-        if (!damagePlayer && collision.GetComponent<PawnShip>() != null)
+        // Check if we hit a player.
+        ControllerPlayer player = collision.GetComponentInParent<ControllerPlayer>();
+
+        if (player != null)
         {
-            return;
+            if (!damagePlayer)
+            {
+                return;
+            }
         }
 
-        // Don't damage our own PawnShip.
-        if (owner != null && collision.GetComponent<PawnShip>() == owner)
+        // Check if we hit an enemy ship.
+        AIController enemy = collision.GetComponentInParent<AIController>();
+
+        if (enemy != null)
+        {
+            if (!damageEnemy)
+            {
+                return;
+            }
+        }
+
+        // Check if we hit an asteroid.
+        Asteroids asteroid = collision.GetComponentInParent<Asteroids>();
+
+        if (asteroid != null)
+        {
+            if (!damageAsteroid)
+            {
+                return;
+            }
+        }
+
+        // Don't damage our own ship.
+        PawnShip otherShip = collision.GetComponentInParent<PawnShip>();
+
+        if (owner != null && otherShip == owner)
         {
             return;
         }
