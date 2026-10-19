@@ -52,8 +52,32 @@ public class PawnShip : Pawn
         }
     }
 
-    public override void Turbo()
+    public override void Seek(Transform target)
     {
-        
+        Seek(target.position);
+    }
+
+    public override void Seek(Vector3 position)
+    {
+        //rotate to look at position
+        RotateTowards(position);
+
+        //Move forward
+        Move(transform.forward);
+    }
+
+    public override void Seek(GameObject target)
+    {
+        Seek(target.transform);
+    }
+
+    public void RotateTowards(Vector3 targetPoint)
+    {
+        //find the vector that points toward target point
+        Vector3 vectorToTarget = targetPoint - transform.position;
+        //find the rotation instructions Quaternion
+        Quaternion lookRotation = Quaternion.LookRotation(vectorToTarget, Vector3.up);
+        //rotate a little bit closer
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, lookRotation, rotateSpeed * Time.deltaTime);
     }
 }

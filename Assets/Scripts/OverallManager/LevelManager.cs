@@ -19,26 +19,36 @@ public class LevelManager : MonoBehaviour
     public TMP_Text scoreText;
     public TMP_Text scoreWinText;
 
-    [Header("Screen Boundaries")]
-    public float topBorder = 1.5f;
-    public float bottomBorder = 1.5f;
+    [Header("Player Boundaries")]
+    public float maxYPosition;
 
     [Header("Player Lives")]
     public int startingLives = 3;
     public int lives;
     public TMP_Text livesText;
 
-    private Camera mainCamera;
+    [Header("Spawn Prefabs")]
+    public GameObject healthPackPrefab;
+    public GameObject astronautPrefab;
+    public GameObject enemyShipPrefab;
+    public GameObject asteroidPrefab;
 
-    public float screenLeft;
-    public float screenRight;
-    public float screenTop;
-    public float screenBottom;
+    [Header("Spawn Points")]
+    public List<SpawnPoint> spawnPoints = new List<SpawnPoint>();
+
+    [Header("Entity Counts")]
+    public int healthPackCount;
+    public int astronautCount;
+    public int enemyShipCount;
+    public int asteroidCount;
+
+    private Camera mainCamera;
 
     public GameObject gameOverPanel;
     public GameObject winPanel;
 
-    public bool spawningFinished = false;
+    private bool spawningFinished = false;
+
 
     private void Awake()
     {
@@ -54,13 +64,232 @@ public class LevelManager : MonoBehaviour
 
         mainCamera = Camera.main;
 
-        CalculateScreenBounds();
+        // Automatically find all spawn points in this level.
+        SpawnPoint[] foundSpawnPoints =
+            FindObjectsByType<SpawnPoint>();
+
+        spawnPoints.AddRange(foundSpawnPoints);
+
+        SpawnEntities();
     }
 
+    //START
     private void Start()
     {
         lives = startingLives;
         UpdateLivesUI();
+    }
+
+
+    //UPDATES
+
+    private void FixedUpdate()
+    {
+        CheckPlayerHeight();
+    }
+
+    private void Update()
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = score.ToString();
+        }
+    }
+
+
+
+
+    //Max height
+    public void CheckPlayerHeight()
+    {
+        if (pawnShip == null)
+            return;
+
+        Vector3 playerPosition = pawnShip.transform.position;
+
+        if (playerPosition.y > maxYPosition)
+        {
+            playerPosition.y = maxYPosition;
+
+            pawnShip.transform.position = playerPosition;
+
+            Rigidbody rb = pawnShip.GetComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                Vector3 velocity = rb.linearVelocity;
+
+                if (velocity.y > 0)
+                {
+                    velocity.y = 0;
+                    rb.linearVelocity = velocity;
+                }
+            }
+        }
+    }
+
+
+    //For spawning ent6ities
+    private void SpawnEntities()
+    {
+        SpawnHealthPacks();
+        SpawnAstronauts();
+        SpawnEnemyShips();
+        SpawnAsteroids();
+    }
+    //for spawning healthpacks
+    private void SpawnHealthPacks()
+    {
+        if (healthPackPrefab == null)
+        {
+            Debug.LogWarning("Health Pack Prefab has not been assigned!");
+            return;
+        }
+
+        List<SpawnPoint> availablePoints = new List<SpawnPoint>();
+
+        foreach (SpawnPoint point in spawnPoints)
+        {
+            if (point.spawnType == SpawnPoint.SpawnType.HealthPack)
+            {
+                availablePoints.Add(point);
+            }
+        }
+        //spawn random points
+        ShuffleList(availablePoints);
+
+        int amountToSpawn = Mathf.Min(
+            healthPackCount,
+            availablePoints.Count
+        );
+        //how many random point spawn
+        for (int i = 0; i < amountToSpawn; i++)
+        {
+            Instantiate(
+                healthPackPrefab,
+                availablePoints[i].transform.position,
+                availablePoints[i].transform.rotation
+            );
+        }
+    }
+
+    private void SpawnAstronauts()
+    {
+        if (astronautPrefab == null)
+        {
+            Debug.LogWarning("Astronaut Prefab has not been assigned!");
+            return;
+        }
+
+        List<SpawnPoint> availablePoints = new List<SpawnPoint>();
+
+        foreach (SpawnPoint point in spawnPoints)
+        {
+            if (point.spawnType == SpawnPoint.SpawnType.Astronaut)
+            {
+                availablePoints.Add(point);
+            }
+        }
+
+        ShuffleList(availablePoints);
+
+        int amountToSpawn = Mathf.Min(
+            astronautCount,
+            availablePoints.Count
+        );
+
+        for (int i = 0; i < amountToSpawn; i++)
+        {
+            Instantiate(
+                astronautPrefab,
+                availablePoints[i].transform.position,
+                availablePoints[i].transform.rotation
+            );
+        }
+    }
+
+
+    private void SpawnEnemyShips()
+    {
+        if (enemyShipPrefab == null)
+        {
+            Debug.LogWarning("Enemy Prefab has not been assigned!");
+            return;
+        }
+
+        List<SpawnPoint> availablePoints = new List<SpawnPoint>();
+
+        foreach (SpawnPoint point in spawnPoints)
+        {
+            if (point.spawnType == SpawnPoint.SpawnType.EnemyShip)
+            {
+                availablePoints.Add(point);
+            }
+        }
+        //spawn random points
+        ShuffleList(availablePoints);
+
+        int amountToSpawn = Mathf.Min(
+            enemyShipCount,
+            availablePoints.Count
+        );
+        //how many random point spawn
+        for (int i = 0; i < amountToSpawn; i++)
+        {
+            Instantiate(
+                enemyShipPrefab,
+                availablePoints[i].transform.position,
+                availablePoints[i].transform.rotation
+            );
+        }
+    }
+
+    private void SpawnAsteroids()
+    {
+        if (asteroidPrefab == null)
+        {
+            Debug.LogWarning("Asteroid Prefab has not been assigned!");
+            return;
+        }
+
+        List<SpawnPoint> availablePoints = new List<SpawnPoint>();
+
+        foreach (SpawnPoint point in spawnPoints)
+        {
+            if (point.spawnType == SpawnPoint.SpawnType.Asteroid)
+            {
+                availablePoints.Add(point);
+            }
+        }
+        //spawn random points
+        ShuffleList(availablePoints);
+
+        int amountToSpawn = Mathf.Min(
+            asteroidCount,
+            availablePoints.Count
+        );
+        //how many random point spawn
+        for (int i = 0; i < amountToSpawn; i++)
+        {
+            Instantiate(
+                asteroidPrefab,
+                availablePoints[i].transform.position,
+                availablePoints[i].transform.rotation
+            );
+        }
+    }
+
+    private void ShuffleList(List<SpawnPoint> list)
+    {
+        for (int i = 0; i < list.Count; i++)
+        {
+            int randomIndex = UnityEngine.Random.Range(i, list.Count);
+
+            SpawnPoint temp = list[i];
+
+            list[i] = list[randomIndex];
+            list[randomIndex] = temp;
+        }
     }
 
     public void LoseLife()
@@ -98,76 +327,39 @@ public class LevelManager : MonoBehaviour
         //}
     }
 
-    public void CheckForVictory()
+public void CheckForVictory()
+{
+    if (!spawningFinished)
     {
-        // Don't check for victory until the spawner is finished.
-        if (!spawningFinished)
-        {
-            return;
-        }
-
-        // If enemies are still alive, don't win.
-        if (obstacleList.Count > 0)
-        {
-            return;
-        }
-
-        // Show victory screen.
-        if (winPanel != null)
-        {
-            winPanel.SetActive(true);
-        }
-
-        if (scoreWinText != null)
-        {
-            scoreWinText.text = score.ToString();
-        }
-
-        Debug.Log("You Win!");
+        return;
     }
 
-   /* public void RespawnPlayer()
+    if (obstacleList.Count > 0)
     {
-        if (controllerPlayer != null)
-        {
-            controllerPlayer.Respawn();
-        }
-    }*/
-
-    private void CalculateScreenBounds()
-    {
-        if (mainCamera == null)
-        {
-            return;
-        }
-
-        // Get the bottom-left corner of the camera
-        Vector3 bottomLeft = mainCamera.ViewportToWorldPoint(
-            new Vector3(0, 0, -mainCamera.transform.position.z)
-        );
-
-        // Get the top-right corner of the camera
-        Vector3 topRight = mainCamera.ViewportToWorldPoint(
-            new Vector3(1, 1, -mainCamera.transform.position.z)
-        );
-
-        // Left and right edges of the screen
-        screenLeft = bottomLeft.x;
-        screenRight = topRight.x;
-
-        // Top and bottom edges, leaving room for the UI bars
-        screenBottom = bottomLeft.y + bottomBorder;
-        screenTop = topRight.y - topBorder;
+        return;
     }
 
-
-    private void Update()
+    if (winPanel != null)
     {
-        if (scoreText != null)
-        {
-            scoreText.text = score.ToString();
-        }
+        winPanel.SetActive(true);
     }
+
+    if (scoreWinText != null)
+    {
+        scoreWinText.text = score.ToString();
+    }
+
+    Debug.Log("You Win!");
+}
+
+    /* public void RespawnPlayer()
+     {
+         if (controllerPlayer != null)
+         {
+             controllerPlayer.Respawn();
+         }
+     }*/
+
 
 
     public void AddScore(int amount)
