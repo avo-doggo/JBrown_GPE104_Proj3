@@ -23,6 +23,7 @@ public class ControllerPlayer : Controller
         if (LevelManager.instance != null)
         {
             LevelManager.instance.controllerPlayer =this;
+            LevelManager.instance.pawnShip = Pawn as PawnShip;
         }
     }
 
@@ -68,12 +69,12 @@ public class ControllerPlayer : Controller
 
         if (Keyboard.current[rollClockwiseKey].isPressed)
         {
-            Pawn.Roll(1);
+            Pawn.Roll(-1);
         }
 
         if (Keyboard.current[rollCounterClockwiseKey].isPressed)
         {
-            Pawn.Roll(-1);
+            Pawn.Roll(1);
         }
 
         if (Keyboard.current[shootKey].wasPressedThisFrame)

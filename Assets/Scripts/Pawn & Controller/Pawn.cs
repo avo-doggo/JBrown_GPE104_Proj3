@@ -9,7 +9,10 @@ public abstract class Pawn : MonoBehaviour
     public abstract void Pitch( float pitchAmount);
     public abstract void Roll(float rollAmount);
     public abstract void Shoot();
-    public abstract void Turbo();
 
+    //seek out a target object or posistion
+    public abstract void Seek(Transform target);
+    public abstract void Seek(Vector3 position);
+    public abstract void Seek(GameObject target);
 
 }

@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
     public AudioClip targetHum;
     public AudioClip healSound;
     public AudioClip backgroundMusic;
+    public AudioClip healthPackSound;
+    public AudioClip astronautSound;
 
 
     [Header("Audio Mixer")]
