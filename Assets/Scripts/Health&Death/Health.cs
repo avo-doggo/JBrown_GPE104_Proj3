@@ -11,7 +11,7 @@ public class Health : MonoBehaviour
 
     private Death death;
 
-    public Image healthBar;
+    public Slider healthBar;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -21,7 +21,7 @@ public class Health : MonoBehaviour
 
         if (healthBar != null)
         {
-            healthBar.fillAmount = 1f;
+            healthBar.value = currentHealth;
         }
     }
 
@@ -38,7 +38,7 @@ public class Health : MonoBehaviour
 
         if (healthBar != null)
         {
-            healthBar.fillAmount = currentHealth / maxHealth;
+            healthBar.value = currentHealth / maxHealth;
         }
     }
 
@@ -48,7 +48,7 @@ public class Health : MonoBehaviour
 
         if (healthBar != null)
         {
-            healthBar.fillAmount = 1f;
+            healthBar.value = 1f;
         }
     }
 
@@ -61,7 +61,7 @@ public class Health : MonoBehaviour
 
         if (healthBar != null)
         {
-            healthBar.fillAmount = currentHealth / maxHealth;
+            healthBar.value = currentHealth / maxHealth;
         }
 
         //check for health being less than or equal to 0 and call the Die method on the death component

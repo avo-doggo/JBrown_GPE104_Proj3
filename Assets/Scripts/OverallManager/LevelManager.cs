@@ -10,14 +10,17 @@ public class LevelManager : MonoBehaviour
     [Header("Player")]
     public ControllerPlayer controllerPlayer;
     public PawnShip pawnShip;
+    public Transform playerSpawnPoint;
 
     [Header("Game")]
     public List<Obstacle> obstacleList;
     public int score;
+    public int highScore;
 
     [Header("UI")]
     public TMP_Text scoreText;
     public TMP_Text scoreWinText;
+    public TMP_Text highScoreText;
 
     [Header("Player Boundaries")]
     public float maxYPosition;
@@ -77,6 +80,7 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         lives = startingLives;
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
         UpdateLivesUI();
     }
 
@@ -136,6 +140,8 @@ public class LevelManager : MonoBehaviour
         SpawnAstronauts();
         SpawnEnemyShips();
         SpawnAsteroids();
+
+        spawningFinished = true;
     }
     //for spawning healthpacks
     private void SpawnHealthPacks()
@@ -301,12 +307,38 @@ public class LevelManager : MonoBehaviour
         if (lives <= 0)
         {
             GameOver();
-        
         }
-       /* else
+        else
         {
             RespawnPlayer();
-        }*/
+        }
+    }
+
+    public void RespawnPlayer()
+    {
+        if (pawnShip == null || playerSpawnPoint == null)
+            return;
+
+        // Move the player back to the spawn point
+        pawnShip.transform.position = playerSpawnPoint.position;
+        pawnShip.transform.rotation = playerSpawnPoint.rotation;
+
+        // Stop the player's movement
+        Rigidbody rb = pawnShip.GetComponent<Rigidbody>();
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+
+        // Restore player's health
+        Health health = pawnShip.GetComponent<Health>();
+
+        if (health != null)
+        {
+            health.ResetHealth();
+        }
     }
 
     private void UpdateLivesUI()
@@ -319,47 +351,59 @@ public class LevelManager : MonoBehaviour
 
     public void GameOver()
     {
-        Destroy(controllerPlayer.gameObject);
-       // if (gameOverPanel != null)
-        //{
-           // gameOverPanel.SetActive(true);
-            
-        //}
+        if (controllerPlayer != null)
+        {
+            Destroy(controllerPlayer.gameObject);
+        }
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(true);
+        }
     }
 
-public void CheckForVictory()
-{
-    if (!spawningFinished)
+    public void CheckForVictory()
     {
-        return;
+        if (!spawningFinished)
+        {
+            return;
+        }
+
+        if (obstacleList.Count > 0)
+        {
+            return;
+        }
+
+        CheckHighScore();
+
+        if (winPanel != null)
+        {
+            winPanel.SetActive(true);
+        }
+
+        if (scoreWinText != null)
+        {
+            scoreWinText.text = score.ToString();
+            highScoreText.text = highScore.ToString();
+
+        }
+
+        Debug.Log("You Win!");
     }
 
-    if (obstacleList.Count > 0)
+
+    public void CheckHighScore()
     {
-        return;
+        if (score > highScore)
+        {
+            highScore = score;
+
+            PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.Save();
+
+            Debug.Log("New High Score: " + highScore);
+        }
     }
-
-    if (winPanel != null)
-    {
-        winPanel.SetActive(true);
-    }
-
-    if (scoreWinText != null)
-    {
-        scoreWinText.text = score.ToString();
-    }
-
-    Debug.Log("You Win!");
-}
-
-    /* public void RespawnPlayer()
-     {
-         if (controllerPlayer != null)
-         {
-             controllerPlayer.Respawn();
-         }
-     }*/
-
 
 
     public void AddScore(int amount)
